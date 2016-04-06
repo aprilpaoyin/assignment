@@ -1,9 +1,9 @@
 /*
- * CODE: 		SCREEN (GUI)
- * DESCRIPTION:	Allows user to enter address of txt file, then displays a pop-up that shows words occurred in 
- * 				txt file and the frequency of it. 
- * AUTHOR: 		APRIL TAN
- * DATE: 		28 MAR 2016
+ * Allows user to enter address of txt file, then displays a pop-up that shows words occurred in 
+ * txt file and the frequency of it. 
+ * 
+ * Author: 	April Tan Pao Yin
+ * Date: 	28/3/16
  * 
  */
 package com.assignment.Assignment;
@@ -13,150 +13,87 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 
 import javax.swing.*;
 
-public class Screen extends JFrame implements ActionListener, MouseListener
+public class Screen extends JFrame implements ActionListener//, MouseListener
 {
-	//private JTextField field2;
-		private JTextField field;
-		private JButton button1;
-		//private JButton button2;
-		private String str1;
-		private String str2;
-		private JLabel label1;
-
-	//constructor
+		private JTextField field; //shows address of file
+		private JButton button1; //to confirm, read a file
+		private JButton button2; //to browse for a file
+		private String str1; //address of file in a str
+		private JLabel label1; //label for the txt field
+		final JFileChooser fChooser; //let user choose a file
+		
+		//constructor
 		public Screen(String title)
 		{
+			//put a title for screen
 			super(title);
 			
-			setLayout(new FlowLayout());	
+			setLayout(new FlowLayout());
 			
-			label1 = new JLabel("Enter address of text file:");
+			label1 = new JLabel("Choose a text file");
 			field = new JTextField("E.g. D:\\Documents\\my_file.txt");
-		    field.setPreferredSize( new Dimension( 200, 30 ) );
-		    field.addMouseListener(this);
-			
-		    add(label1);
-		    add(field);
-			
-			/*
-			field2 = new JTextField();
-		    field2.setPreferredSize( new Dimension( 100, 24 ) );
-			add(field2);
-			*/
+		    field.setPreferredSize( new Dimension( 200, 30 ));
+			fChooser = new JFileChooser();
 			
 			button1 = new JButton("Read this file");
+			button2 = new JButton("Browse");
+			
+			add(label1);
+		    add(field);
+		    add(button2);
 			add(button1);
 			
-			//button2= new JButton("Not Error Checking");
-			//add(button2);
-			
-			
 			button1.addActionListener(this);
-			//mouseClicked(this)
-			addMouseListener(new MyMouseListener(this));
+			button2.addActionListener(this);
 
-			//button2.addActionListener(this);
-
-			
 			setVisible(true);
-			
+		}//end 1st constructor
 
-		}
-
-
-
-
-		public void actionPerformed(ActionEvent arg0) {
+		public void actionPerformed(ActionEvent arg0) 
+		{
 
 			if(arg0.getSource()==button1)
 			{
-				str1=field.getText();
-				//str2=field2.getText();
+				setStr1(field.getText());
+			}
+			else if (arg0.getSource() == button2)
+			{
+				int returnVal = fChooser.showOpenDialog(this);
 				
-				if(str2.length()==1)
+				if(returnVal == JFileChooser.APPROVE_OPTION)
 				{
-					
-					try
-					{
-						if(str1.charAt(0)==str2.charAt(0))
-						{
-							JOptionPane.showMessageDialog(this,"They Match");	
-						}
-						else
-						{
-							JOptionPane.showMessageDialog(this, "They Dont Match");
-			
-						}
-					}
-					catch (IndexOutOfBoundsException e)
-					{
-						    System.err.println("IndexOutOfBoundsException: " + e.getMessage());
-					}
+					File file = fChooser.getSelectedFile();
+					JOptionPane.showMessageDialog(this, "Opening: " + file.getName());
 				}
-				
-				else{
-					JOptionPane.showMessageDialog(this, "Please only enter 1 character");
+				else
+				{
+					JOptionPane.showMessageDialog(this, "CANCELLED");
 				}
 			}
 			
-			/*if(arg0.getSource()==button2)
-			{
-				JOptionPane.showMessageDialog(this, "THIS AINT ERROR CHECKING DWAG");
-			}*/
-
-			
-		}
+		}//end actionlistener
 		
-		public void mousePressed(MouseEvent e){
-		
-		}
-
-
-		public void mouseClicked(MouseEvent e) 
+		public JLabel getLabel1() 
 		{
-			// TODO Auto-generated method stub
-			field.setText("");
-		}
-
-
-
-		@Override
-		public void mouseEntered(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-
-
-		@Override
-		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-
-
-		@Override
-		public void mouseReleased(MouseEvent e) 
-		{
-			// TODO Auto-generated method stub
-			
-		}
-
-
-
-
-		public JLabel getLabel1() {
 			return label1;
 		}
 
-
-
-
-		public void setLabel1(JLabel label1) {
+		public void setLabel1(JLabel label1) 
+		{
 			this.label1 = label1;
+		}
+
+		public String getStr1() 
+		{
+			return str1;
+		}
+
+		public void setStr1(String str1) 
+		{
+			this.str1 = str1;
 		}
 }

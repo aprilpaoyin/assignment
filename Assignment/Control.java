@@ -1,3 +1,8 @@
+/*
+ * Control class for the assignment with some statements for the screen.
+ * Author: 	April Tan Pao Yin
+ * Date: 	4/4/16
+ */
 package com.assignment.Assignment;
 
 public class Control 
