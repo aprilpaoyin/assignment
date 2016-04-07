@@ -35,9 +35,12 @@ public class Screen extends JFrame implements ActionListener//, MouseListener
 			setLayout(new FlowLayout());
 			
 			label1 = new JLabel("Choose a text file");
-			field = new JTextField("E.g. D:\\Documents\\my_file.txt");
+			field = new JTextField("File name");
 		    field.setPreferredSize( new Dimension( 200, 30 ));
 			fChooser = new JFileChooser();
+			
+			//set font style of text field
+			field.setFont(new Font("Arial", Font.ITALIC, 12));
 			
 			button1 = new JButton("Read this file");
 			button2 = new JButton("Browse");
@@ -68,6 +71,8 @@ public class Screen extends JFrame implements ActionListener//, MouseListener
 				{
 					File file = fChooser.getSelectedFile();
 					JOptionPane.showMessageDialog(this, "Opening: " + file.getName());
+					field.setText(file.getName());
+					field.setFont(new Font("Arial", Font.PLAIN, 12));
 				}
 				else
 				{
