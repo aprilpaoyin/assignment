@@ -12,6 +12,7 @@ package com.assignment.Assignment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 
 public interface ReadFile 
 {
@@ -20,6 +21,10 @@ public interface ReadFile
 	}
 	
 	public static void unhelpfulWords(File file, File unhelpful, String holder) throws FileNotFoundException
+	{
+	}
+	
+	public static void addedWords(ArrayList<String> user)
 	{
 	}
 }

@@ -2,7 +2,7 @@
  * Allows user to enter address of txt file, then displays a pop-up that shows words occurred in 
  * txt file and the frequency of it. 
  * 
- * Author: 	April Tan Pao Yin
+ * Author: 	April Tan Pao Yin D14124009
  * Date: 	28/3/16
  * 
  */
@@ -20,20 +20,21 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class Screen extends JFrame implements ActionListener, ReadFile
 {
-		protected JTextField field; //shows address of file
+		protected JTextField field1; //shows name of file
+		protected JTextField field2; //for words user wants to ignore
+		protected JTextArea field3; //to show contents of userUnhelpful
 		protected JButton button1; //to browse for a file
 		protected JButton button2; //to confirm, read a file
-		private JLabel label; //label for the txt field
+		protected JButton button3; //add words to ignore
+		protected JButton button4; //remove added words
+		private JLabel label1; //label for field1
+		private JLabel label2;
+		private JLabel label3; 
+		private JLabel label4; //label for * description
 		static File main_file; //declaration for file
-		static File unhelpful = new File("src/com/assignment/Assignment/unhelpful.txt"); //file for list of unhelpful words
-		static ArrayList<String> words = new ArrayList<String>(); //array to store words
-	    static ArrayList<Integer> counts = new ArrayList<Integer>(); //array to store words count
-		static ArrayList<String> combined = new ArrayList<String>(); //array to store combined words and count to display
-	    
-		/*
-		 * Code for FileChooser referenced from: https://docs.oracle.com/javase/tutorial/uiswing/components/filechooser.html
-		 */
-		final JFileChooser fChooser; //let user choose a file
+		static ArrayList<String> userUnhelpful = new ArrayList<String>(); //to store user input
+	    final JFileChooser fChooser; //let user choose a file
+	    private String userContent;
 		
 		//constructor
 		public Screen(String title)
@@ -42,27 +43,55 @@ public class Screen extends JFrame implements ActionListener, ReadFile
 			super(title);
 			setLayout(new FlowLayout());
 			
-			label = new JLabel("Choose a text file");
-			field = new JTextField("File name");
-		    field.setPreferredSize( new Dimension( 200, 30 ));
-			fChooser = new JFileChooser();
+			label1 = new JLabel("Choose a text file");
+			field1 = new JTextField("File name");
+		    field1.setPreferredSize(new Dimension(300, 30));
+		    //set font style of text fields
+			field1.setFont(new Font("Arial", Font.ITALIC, 12));
+			field1.setEditable(false);
 			
-			//set font style of text field
-			field.setFont(new Font("Arial", Font.ITALIC, 12));
+		    label2 = new JLabel("Add/remove words to ignore one by one below*");
+		    field2 = new JTextField();
+		    field2.setPreferredSize(new Dimension(400, 30));
+		    
+			label3 = new JLabel("Added unhelpful words shown below");
+			field3 = new JTextArea();
+			field3.setPreferredSize(new Dimension(400, 200));
+			field3.setEditable(false);
+			field3.setLineWrap(true);
 			
-			button1 = new JButton("Browse");
+			label4 = new JLabel("*Type in a word and click the \"add\" button to add the word");
+			
+		    fChooser = new JFileChooser();
+			
+			button1 = new JButton("Browse files");
 			button2 = new JButton("Read this file");
+			button3 = new JButton("Add unhelpful word");
+			button4 = new JButton("Remove unhelpful word");
 			
-			add(label);
-		    add(field);
-		    add(button1);
+			add(label1);
+			add(field1); 
+			add(button1);
 			add(button2);
+			add(label2);
+		    add(field2); 
+			add(button3);
+			add(button4);
+			add(label3);
+			add(field3);
+			add(label4);
 			
 			button1.addActionListener(this);
 			button2.addActionListener(this);
+			button3.addActionListener(this);
+			button4.addActionListener(this);
 
+			setUserContent("");
+			
 			setVisible(true);
-		}//end 1st constructor
+		}//end constructor
+
+		
 
 		/*
 		 * -Checks source of the action event (button pressed).
@@ -84,6 +113,12 @@ public class Screen extends JFrame implements ActionListener, ReadFile
 				FileNameExtensionFilter txtFilter = new FileNameExtensionFilter("TEXT FILES", "txt", "text");
 				fChooser.setFileFilter(txtFilter);
 				
+				//clear unhelpful words used for previous file
+				userUnhelpful.clear();
+				setUserContent("");
+				field3.setText(getUserContent());
+				field2.setText("");
+				
 				//File Chooser code referenced from : https://docs.oracle.com/javase/tutorial/uiswing/components/filechooser.html
 				int returnVal = fChooser.showOpenDialog(this);
 			
@@ -94,8 +129,8 @@ public class Screen extends JFrame implements ActionListener, ReadFile
 					JOptionPane.showMessageDialog(this, "Opening: " + main_file.getName(), "Opening File", JOptionPane.INFORMATION_MESSAGE);
 					
 					//put file name in test field
-					field.setText(main_file.getName());
-					field.setFont(new Font("Arial", Font.PLAIN, 12));
+					field1.setText(main_file.getName());
+					field1.setFont(new Font("Arial", Font.PLAIN, 12));
 				}//end inner if
 				else
 				{
@@ -106,156 +141,40 @@ public class Screen extends JFrame implements ActionListener, ReadFile
 			{
 				try
 				{
-					//calls read method to read a file and store words in array
-					read(main_file, unhelpful);
+					//calls Reader class to read a file and store words in array
+					Reader.read(main_file, userUnhelpful);
 				}//end try
 				catch (Exception e)
 				{
 					JOptionPane.showMessageDialog(this, "Error: " + e);
 				}//end catch
 			}//end else...if
-		}//end actionlistener
-		
-		
-		
-		/*
-		 * Reads file word by word
-		 */
-		public static void read(File file, File unhelpful) throws FileNotFoundException
-		{
-			Scanner scan1 = new Scanner(file); 
-			//Scanner scan2 = new Scanner(unhelpful);
-			
-		    String holder; //holder for word
-		    //String singleWord; //used for comparison
-		    int searchIx; //search index
-		    boolean newWord; //whether or not current word is a new word
-			
-			//put first word into array then replace anything in string that aren't letters or numbers
-			holder = scan1.next().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
-			unhelpfulWords(file, unhelpful, holder);
-			//words.add(holder);
-			//counts.add(1);
-			
-			while(scan1.hasNext())
-			{	   
-				holder = scan1.next().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
-				//singleWord = holder.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+			else if(arg0.getSource() == button3)
+			{
+				userUnhelpful.add(field2.getText());
 				
-				searchIx = 0;
-				newWord = true;
-				
-				//cycle through words array
-				for(String string : words)
+				for(String item : userUnhelpful)
 				{
-					//if current word is found in the words array
-					if(string.equals(holder/*singleWord*/))
-					{
-						/*increment count, set element in that index to the incremented number, 
-						 *then say that it is not a new word 
-						 */
-						int num = counts.get(searchIx);
-						num++;
-						counts.set(searchIx, num);
-						newWord = false;
-					}//end if
-					
-					searchIx++;
+					setUserContent(item + "\t" + getUserContent());
 				}//end for
 				
-				//if it is a new word (not in words array)
-				if(newWord)
-				{
-					unhelpfulWords(file, unhelpful, holder);
-					
-					/*boolean found = false;
-					String temp = scan2.next().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
-					
-					while(scan2.hasNext() && found == false)
-					{
-						if(!(singleWord.equals(temp)))
-						{
-							words.add(singleWord);
-							counts.add(1);
-							found = true;
-						}//end inner if
-						temp = scan2.next().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
-					}//end while*/
-				}//end outer if
-				
-			}//end while
-			  
-			/*combine the contents of words and counts
-			 * 
-			 * code referenced from: http://stackoverflow.com/questions/16984221/display-arraylist-contents-in-a-joptionpane-showmessagedialog
-			 */
-	        StringBuilder combined = new StringBuilder("<html>");
-	        int elsPerLine = 0;
-	        
-			for(int i = 0; i < words.size(); i++)
+				field3.setText(getUserContent());
+				field2.setText("");
+			}//end else...if
+			else if(arg0.getSource() == button4)
 			{
-				combined.append(words.get(i) + ": " + counts.get(i) + "\t\t");
-				elsPerLine++;
+				userUnhelpful.remove(field2.getText());
 				
-				if(elsPerLine > 2) 
+				for(String item : userUnhelpful)
 				{
-					combined.append("<br>");
-					elsPerLine = 0;
-				}//end if
-			}//end for
-			combined.append("</html>");
-			
-			JOptionPane.showMessageDialog(null, combined.toString(), "Results", JOptionPane.INFORMATION_MESSAGE);
-			
-			scan1.close();
-			//scan2.close();
-		}//end read
-		
-		
-		
-		public static void unhelpfulWords(File file, File unhelpful, String holder)
-		{
-			boolean found = false;
-			String temp;
-			int count=0;
-			
-			try 
-			{
-
-				Scanner scan2 = new Scanner(unhelpful);
-			
-				System.out.println(count);
-				while(scan2.hasNext() && found == false)
-				{
-					temp = scan2.next().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
-					
-					if(temp.equals(holder))
-					{
-						found = true;
-						System.out.println("please");
-						count++;
-					}//end if
-					else
-					{
-						found = false;
-						System.out.println("help");
-					}
-				}//end while
+					setUserContent(item + "\t" + getUserContent());
+				}//end for
 				
-				if(found == false)
-				{
-					words.add(holder);
-					counts.add(1);
-				}//end if
-				System.out.println(count);
-				
-				scan2.close();
-			}//end try
-			catch(Exception e)
-			{
-				JOptionPane.showMessageDialog(null, "Error: " + e);
-			}//end catch
-		}//end unhelpfulWords
+				field3.setText(getUserContent());
+				field2.setText("");
+			}//end else...if
+		}//end actionlistener
+		
 		
 		
 		/*
@@ -263,11 +182,31 @@ public class Screen extends JFrame implements ActionListener, ReadFile
 		 */
 		public JLabel getLabel1() 
 		{
-			return label;
+			return label1;
 		}
 
 		public void setLabel1(JLabel label) 
 		{
-			this.label = label;
+			this.label1 = label;
+		}
+
+		public JLabel getLabel2() 
+		{
+			return label2;
+		}
+
+		public void setLabel2(JLabel label2) 
+		{
+			this.label2 = label2;
+		}
+		
+		public String getUserContent()
+		{
+			return userContent;
+		}
+
+		public void setUserContent(String userContent) 
+		{
+			this.userContent = userContent;
 		}
 }
